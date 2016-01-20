@@ -86,7 +86,7 @@ int menu_more() {
         }
 
         // draw "help"
-        gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault, "Informations", minX + 6, 20);
+        gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault, "Information", minX + 6, 20);
         switch (menu_index) {
             case 0:
                 gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault,
@@ -105,12 +105,12 @@ int menu_more() {
 
             case 3:
                 gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault,
-                            "Reboot the 3ds...", minX + 12, 40);
+                            "Reboot the 3ds . . .", minX + 12, 40);
                 break;
 
             case 4:
                 gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault,
-                            "Shutdown the 3ds...", minX + 12, 40);
+                            "Shutdown the 3ds . . .", minX + 12, 40);
                 break;
 
             default:

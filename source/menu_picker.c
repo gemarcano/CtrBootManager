@@ -32,7 +32,7 @@ void get_dir(const char *path) {
     strncpy(new_path, path, 512);
 
     if (NULL == (fd = opendir(new_path))) {
-        printf("\xb[3;1HDirectory empty...");
+        printf("\xb[3;1HDirectory empty. . .");
         return;
     }
 
@@ -206,7 +206,7 @@ void pick_file(file_s *picked, const char *path) {
                 gfxDrawRectangle(GFX_TOP, GFX_LEFT, (u8[]) {0xDC, 0xDC, 0xDC}, minX + 4, minY + 16 * y, maxX - 23, 15);
                 gfxDrawTextN(GFX_TOP, GFX_LEFT, &fontSelected, picker->files[i].name, 47, minX + 6, minY + 16 * y);
                 if (!picker->files[i].isDir) {
-                    gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault, "Informations", minX + 6, 20);
+                    gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault, "Information", minX + 6, 20);
                     gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault,
                                 "Press (A) to launch\nPress (X) to add to boot menu", minX + 12, 40);
                 }

@@ -92,7 +92,7 @@ void debug(const char *fmt, ...) {
 
         gfxClear();
         gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, s, 8, 32);
-        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, "Press any key to continue...", 8, 64);
+        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, "Press any key to continue. . .", 8, 64);
         gfxSwap();
     }
 }
@@ -116,8 +116,8 @@ bool confirm(int confirmButton, const char *fmt, ...) {
 
         gfxClear();
         gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, s, 8, 32);
-        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, "Press any key to cancel...", 8, 64);
-        gfxDrawTextf(GFX_TOP, GFX_LEFT, &fontDefault, 8, 80, "Press (%s) to confirm...", get_button(confirmButton));
+        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, "Press any key to cancel. . .", 8, 64);
+        gfxDrawTextf(GFX_TOP, GFX_LEFT, &fontDefault, 8, 80, "Press (%s) to confirm. . .", get_button(confirmButton));
         gfxSwap();
     }
 }
@@ -142,10 +142,10 @@ void load_homemenu() {
 
     /*
     if (nsInit() != 0) {
-        debug("Err: nsInit...\n");
+        debug("Err: nsInit. . .\n");
     } else {
         if (NS_RebootToTitle(0x0004003000009802, 0) != 0) {
-            debug("Err: NS_LaunchTitle...\n");
+            debug("Err: NS_LaunchTitle. . .\n");
         }
     }
     nsExit();
