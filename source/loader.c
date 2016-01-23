@@ -1,15 +1,19 @@
 #include <3ds.h>
 #include <string.h>
+#include <assert.h>
 
 #include "brahma.h"
 #include "utility.h"
 
+//These are global variables...
 char boot_app[512];
 bool boot_app_enabled;
 
+static_assert(sizeof(boot_app) == 512, "Size of the array has been changed!");
+
 int load_3dsx(char *path) {
-    memset(boot_app, 0, 512);
-    strncpy(boot_app, path, 512);
+    memset(boot_app, 0, sizeof(boot_app));
+    strncpy(boot_app, path, sizeof(boot_app));
     boot_app_enabled = true;
     return 0;
 }
