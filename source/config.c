@@ -7,10 +7,6 @@
 #include <libconfig.h>
 #include "config.h"
 
-#define CONFIG_PATH "/boot.cfg"
-config_t cfg;
-ctrbm_config config;
-
 void ctrbm_config_entry_init(
     ctrbm_config_entry *apEntry,
     const char *apTitle,
@@ -148,58 +144,88 @@ static void loadEntry(
     }
 }
 
-static void loadConfig(ctrbm_config *apConfig, const config_t *apConfigLib) {
-    config_setting_t *setting_boot = config_lookup(apConfigLib, "boot_config");
-    if (setting_boot != NULL) {
-        int configOutput;
-
-        if (config_setting_lookup_int(setting_boot, "timeout", &configOutput)) {
-            if (configOutput < 0) {
-	        configOutput = 0;
-            }
-	    apConfig->timeout = configOutput;
-        }
-        if (config_setting_lookup_int(
-	    setting_boot, "autobootfix", &configOutput))
-	{
-            if (configOutput < 0) {
-	        configOutput = 0;
-            }
-	    apConfig->autobootfix = configOutput;
-        }
-        if (config_setting_lookup_int(setting_boot, "default", &configOutput)) {
-	    if (configOutput < 0) {
-	        configOutput = 0;
-            }
-            apConfig->default_entry = configOutput;
-        }
-        if (config_setting_lookup_int(setting_boot, "recovery", &configOutput)){
-            if (configOutput < 0) {
-	        configOutput = 0;
-            }
-            apConfig->menu_key = configOutput;
+static void getSetting(config_setting_t *apRoot, const char *name, int *output) {
+    if (config_setting_lookup_int(apRoot, name, output)) {
+        if (*output < 0) {
+            *output = 0;
         }
     }
+}
+
+static bool validateEntry(config_setting_t *entry) {
+    if (!config_setting_lookup(entry, "title")
+	  || !config_setting_lookup(entry, "path"))
+	return false;
+
+   return true;
+}
+
+static bool validateConfig(const config_t *config) {
+    config_setting_t *setting_boot = config_lookup(config, "boot_config");
+    config_setting_t *setting_entries =
+        config_setting_lookup(setting_boot, "entries");
+    if (!setting_boot || !setting_entries ||
+        !config_setting_lookup(setting_boot, "timeout") ||
+	!config_setting_lookup(setting_boot, "autobootfix") ||
+	!config_setting_lookup(setting_boot, "default") ||
+        !config_setting_lookup(setting_boot, "recovery"))
+    {
+        return false;
+    }
+   
+    size_t count = (size_t)config_setting_length(setting_entries);
+    if (count > CONFIG_MAX_ENTRIES)
+        count = CONFIG_MAX_ENTRIES;
+
+    for (size_t i = 0; i < count; ++i) {
+        config_setting_t *entry =
+	    config_setting_get_elem(setting_entries, i);
+        if (!validateEntry(entry))
+	    return false;
+    }
+    return true;
+}
+
+//FIXME error checking?
+static bool loadConfig(ctrbm_config *apConfig, const config_t *apConfigLib) {
+    
+    if (!validateConfig(apConfigLib))
+        return false;
+    
+    config_setting_t *setting_boot = config_lookup(apConfigLib, "boot_config");
+    int configOutput;
+    getSetting(setting_boot, "timeout", &configOutput);
+    apConfig->timeout = configOutput;
+	
+    getSetting(setting_boot, "autobootfix", &configOutput);
+    apConfig->autobootfix = configOutput;
+        
+    getSetting(setting_boot, "default", &configOutput);
+    apConfig->default_entry = configOutput;
+        
+    getSetting(setting_boot, "recovery", &configOutput);
+    apConfig->menu_key = configOutput;
 
     config_setting_t *setting_entries =
         config_lookup(apConfigLib, "boot_config.entries");
 
-    if (setting_entries != NULL) {
-        size_t count = (size_t)config_setting_length(setting_entries);
-        if (count > CONFIG_MAX_ENTRIES)
-            count = CONFIG_MAX_ENTRIES;
+    size_t count = (size_t)config_setting_length(setting_entries);
+    if (count > CONFIG_MAX_ENTRIES)
+        count = CONFIG_MAX_ENTRIES;
 
-        for (size_t i = 0; i < count; ++i) {
-            config_setting_t *entry =
-	        config_setting_get_elem(setting_entries, i);
-	    loadEntry(&apConfig->entries[i], entry);
-            apConfig->n_entries++;
-        }
-        // prevent invalid boot index
-        if (apConfig->default_entry >= apConfig->n_entries) {
-            apConfig->default_entry = apConfig->n_entries;
-	}
+    for (size_t i = 0; i < count; ++i) {
+        config_setting_t *entry =
+            config_setting_get_elem(setting_entries, i);
+        loadEntry(&apConfig->entries[i], entry);
+        apConfig->n_entries++;
+    }
+
+    // prevent invalid boot index
+    if (apConfig->default_entry >= apConfig->n_entries) {
+        apConfig->default_entry = apConfig->n_entries;
     } 
+
+    return true;
 }
 
 static void saveNewEntry(
@@ -274,31 +300,13 @@ bool ctrbm_config_write_to_disk(const ctrbm_config *apConfig, const char* path){
     return result;
 }
 
-int ctrbm_config_read_from_disk(ctrbm_config *apConfig, const char* path) {
+bool ctrbm_config_read_from_disk(ctrbm_config *apConfig, const char* path) {
     config_t cfg;
     config_init(&cfg);
     if (!config_read_file(&cfg, path)) {
-        return -1;
+        return false;
     }
-    loadConfig(apConfig, &cfg);
+    bool result = loadConfig(apConfig, &cfg);
     config_destroy(&cfg);
-    return 0;
+    return result;
 }
-
-int configInit() {
-    ctrbm_config_init(&config);
-    ctrbm_config_set_defaults(&config);
- 
-    if (!config_read_file(&cfg, CONFIG_PATH)) {
-        return -1;
-    }
-    loadConfig(&config, &cfg);
-
-    return 0;
-}
-
-int configExit() {
-    ctrbm_config_destroy(&config);
-    return 0;
-}
-

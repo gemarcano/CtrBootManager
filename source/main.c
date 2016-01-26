@@ -32,7 +32,6 @@ void __appInit() {
 void __appExit() {
     gfxExit();
     netloader_exit();
-    configExit();
     amExit();
     ptmuExit();
     acExit();
@@ -51,6 +50,11 @@ int main(int argc, char *argv[]) {
         strcpy(boot_app, "/boot.3dsx");
         boot_app_enabled = true;
     }
+
+    ctrbm_config config;
+    ctrbm_config_init(&config);
+    ctrbm_config_set_defaults(&config);
+    bool config_loaded = ctrbm_config_read_from_disk(&config, "/boot.cfg");
 
     osSetSpeedupEnable(true);
 

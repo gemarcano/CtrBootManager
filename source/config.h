@@ -105,7 +105,6 @@ bool ctrbm_config_add_entry(
     uint32_t auto_key,
     uintptr_t offset );
 
-//true on success, false on fail. Returns removed element via apEntry if not NULL
 /** @brief Removes an entry from the given configuration.
  *
  *  @param [in,out] config Pointer to the configuration to act upon.
@@ -119,7 +118,6 @@ bool ctrbm_config_add_entry(
 bool ctrbm_config_remove_entry(
     ctrbm_config *config, size_t index, ctrbm_config_entry *apEntry);
 
-//Sets the config to the default values, instead of all zeros
 /** @brief Sets the default values for CtrBootManager's configuration to the
  *      given configuration.
  *  @parm [in,out] config Pointer to the configuration to operate on.
@@ -153,8 +151,11 @@ void ctrbm_config_set_defaults(ctrbm_config *config);
  *  @param [in,out] config The configuration file to updated with the data from
  *      disk.
  *  @param [in] path Path to the configuration file.
+ *
+ *  @returns True on success, false on failure. This function fails if it can't
+ *      find the file, or if the configuration fails to validate.
  */
-int ctrbm_config_read_from_disk(ctrbm_config *config, const char* path);
+bool ctrbm_config_read_from_disk(ctrbm_config *config, const char* path);
 
 /** @brief Writes a configuration file to the disk.
  *

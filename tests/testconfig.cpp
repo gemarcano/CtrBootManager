@@ -99,7 +99,9 @@ TEST(ctrbm_config_test, config_read_from_disk)
 	ctrbm_config config;
         ctrbm_config_init(&config);
 
-	ctrbm_config_read_from_disk(&config, "boot_1.cfg");
+	EXPECT_TRUE(ctrbm_config_read_from_disk(&config, "boot_1.cfg"));
+	EXPECT_FALSE(ctrbm_config_read_from_disk(&config, "boot_2.cfg"));
+	EXPECT_FALSE(ctrbm_config_read_from_disk(&config, "boot_3.cfg"));
 
 	EXPECT_EQ((time_t)5, config.timeout);
 	EXPECT_EQ((uint8_t)3, config.autobootfix);
