@@ -152,6 +152,10 @@ void ctrbm_config_set_defaults(ctrbm_config *config);
  *      disk.
  *  @param [in] path Path to the configuration file.
  *
+ *  @post On a false return, the configuration pointed by the config parameter
+ *      will remain unmodified, else it will be loaded with the interpreted
+ *      contents of the configuration file found at the given path.
+ *
  *  @returns True on success, false on failure. This function fails if it can't
  *      find the file, or if the configuration fails to validate.
  */
