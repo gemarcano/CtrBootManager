@@ -9,6 +9,7 @@
 #include "utility.h"
 #include "menu.h"
 
+//Shouldn't these extern declarations be in a header?
 extern char boot_app[512];
 extern bool boot_app_enabled;
 
@@ -16,6 +17,7 @@ extern void scanMenuEntry(menuEntry_s *me);
 
 int bootApp(char *executablePath, executableMetadata_s *em, char *arg);
 
+//Override the default from ctrulib
 void __appInit() {
     srvInit();
     aptInit();
@@ -29,6 +31,7 @@ void __appInit() {
     gfxInitDefault();
 }
 
+//Override the default from ctrulib
 void __appExit() {
     gfxExit();
     netloader_exit();
@@ -55,17 +58,21 @@ int main(int argc, char *argv[]) {
     ctrbm_config_init(&config);
     ctrbm_config_set_defaults(&config);
     bool config_loaded = ctrbm_config_read_from_disk(&config, "/boot.cfg");
+    if (!config_loaded) {
+        debug("Configuration file not loaded! Either the file does not exist, or it is malformatted...");
+        debug("Initializing with default settings...");
+    }
 
+    //This only impacts the N3DS
     osSetSpeedupEnable(true);
 
-    // offset potential issues caused by homebrew that just ran (from hb_menu)
+    // offset potential issues caused by homebrew that just ran (from hb_menu) (like what?)
     aptOpenSession();
     APT_SetAppCpuTimeLimit(0); //According to http://3dbrew.org/APT:SetApplicationCpuTimeLimit, this is oh so wrong...
     aptCloseSession();
 
     if (!boot_app_enabled) { // fix SOC_Initialize
-
-        if (configInit() != 0 || config->count <= 0) { // recovery
+        if (config_loaded || config.n_entries == 0) { // recovery
             while (aptMainLoop()) {
                 if (menu_more() == 0)
                     break;

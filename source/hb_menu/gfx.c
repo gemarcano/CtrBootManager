@@ -397,8 +397,8 @@ void gfxClearColor(u8 rgbColor[3]) {
 }
 
 void gfxClear() {
-    gfxFillColorGradient(GFX_TOP, GFX_LEFT, (u8[]) {0x4a, 0x00, 0x31}, (u8[]) {0x6f, 0x01, 0x49});
-    gfxFillColor(GFX_BOTTOM, GFX_LEFT, (u8[]) {0x6f, 0x01, 0x49});
+    gfxFillColorGradient(GFX_TOP, GFX_LEFT, (u8[]) {0x00, 0x00, 0x11}, (u8[]) {0x00, 0x00, 0x44});
+    gfxFillColor(GFX_BOTTOM, GFX_LEFT, (u8[]) {0x00, 0x00, 0x44});
 }
 
 void gfxSwap() {
