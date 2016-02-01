@@ -21,12 +21,10 @@ int load_3dsx(char *path) {
 int load_bin(char *path, long offset) {
 
     if (brahma_init()) {
-        int rc = load_arm9_payload_offset(path, (u32)offset, 0x10000);
-        if (rc != 1) {
+        if (load_arm9_payload_offset(path, (u32) offset, 0x10000) != 1) {
             debug("Err: Couldn't load arm9 payload...\n");
             return -1;
         }
-
         firm_reboot();
         brahma_exit();
 
@@ -39,14 +37,22 @@ int load_bin(char *path, long offset) {
 }
 
 int load(char *path, long offset) {
-    const char *ext = get_filename_ext(path);
-    if (strcasecmp(ext, "bin") == 0
-        || strcasecmp(ext, "dat") == 0) {
-        return load_bin(path, offset);
-    } else if (strcasecmp(ext, "3dsx") == 0) {
-        return load_3dsx(path);
+    // check for reboot/poweroff
+    if (strcasecmp(path, "reboot") == 0) {
+        reboot();
+    } else if (strcasecmp(path, "shutdown") == 0) {
+        poweroff();
     } else {
-        debug("Invalid file: %s\n", path);
-        return -1;
+        const char *ext = get_filename_ext(path);
+        if (strcasecmp(ext, "bin") == 0
+            || strcasecmp(ext, "dat") == 0) {
+            return load_bin(path, offset);
+        } else if (strcasecmp(ext, "3dsx") == 0) {
+            return load_3dsx(path);
+        } else {
+            debug("Invalid file: %s\n", path);
+            return -1;
+        }
     }
+    return 0;
 }

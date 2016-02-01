@@ -2,24 +2,32 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
 
 #include <libconfig.h>
 #include "config.h"
 #include "utility.h"
+#include "font.h"
 
 #define CONFIG_PATH "/boot.cfg"
 config_t cfg;
 config_setting_t *setting_root = NULL, *setting_boot = NULL, *setting_entries = NULL;
 
+int configCreate();
+
+void configThemeInit();
+
+void setColor(u8 *cfgColor, const char *color);
+
 int configInit() {
 
     config = malloc(sizeof(boot_config_s));
     memset(config, 0, sizeof(boot_config_s));
+
     config->timeout = 3;
     config->autobootfix = 100;
     config->index = 0;
     config->recovery = 2;
+    configThemeInit();
 
     config_init(&cfg);
 
@@ -57,7 +65,7 @@ int configInit() {
 
         int i;
         for (i = 0; i < count; ++i) {
-            config_setting_t *entry = config_setting_get_elem(setting_entries, i);
+            config_setting_t *entry = config_setting_get_elem(setting_entries, (unsigned int) i);
             const char *title, *path, *offset;
             int key = -1;
 
@@ -82,7 +90,61 @@ int configInit() {
         }
     }
 
+    // "theme"
+    config_setting_t *setting_theme = config_lookup(&cfg, "boot_config.theme");
+    if (setting_theme != NULL) {
+
+        const char *str, *path;
+        if (config_setting_lookup_string(setting_theme, "bgTop1", &str)) {
+            setColor(config->bgTop1, str);
+        }
+        if (config_setting_lookup_string(setting_theme, "bgTop2", &str)) {
+            setColor(config->bgTop2, str);
+        }
+        if (config_setting_lookup_string(setting_theme, "bgBottom", &str)) {
+            setColor(config->bgBot, str);
+        }
+        if (config_setting_lookup_string(setting_theme, "highlight", &str)) {
+            setColor(config->highlight, str);
+        }
+        if (config_setting_lookup_string(setting_theme, "borders", &str)) {
+            setColor(config->borders, str);
+        }
+        if (config_setting_lookup_string(setting_theme, "font1", &str)) {
+            setColor(config->fntDef, str);
+        }
+        if (config_setting_lookup_string(setting_theme, "font2", &str)) {
+            setColor(config->fntSel, str);
+        }
+        if (config_setting_lookup_string(setting_theme, "bgImgTop", &path)) {
+            strncpy(config->bgImgTop, path, 512);
+        }
+        if (config_setting_lookup_string(setting_theme, "bgImgBot", &path)) {
+            strncpy(config->bgImgBot, path, 512);
+        }
+    }
+    memcpy(fontDefault.color, config->fntDef, sizeof(u8[3]));
+    memcpy(fontSelected.color, config->fntSel, sizeof(u8[3]));
+    loadImages();
+
     return 0;
+}
+
+void setColor(u8 *cfgColor, const char *color) {
+    long l = strtoul(color, NULL, 16);
+    cfgColor[0] = (u8) (l >> 16 & 0xFF);
+    cfgColor[1] = (u8) (l >> 8 & 0xFF);
+    cfgColor[2] = (u8) (l & 0xFF);
+}
+
+void configThemeInit() {
+    memcpy(config->bgTop1, (u8[3]) {0x4a, 0x00, 0x31}, sizeof(u8[3]));
+    memcpy(config->bgTop2, (u8[3]) {0x6f, 0x01, 0x49}, sizeof(u8[3]));
+    memcpy(config->bgBot, (u8[3]) {0x6f, 0x01, 0x49}, sizeof(u8[3]));
+    memcpy(config->highlight, (u8[3]) {0xdc, 0xdc, 0xdc}, sizeof(u8[3]));
+    memcpy(config->borders, (u8[3]) {0xff, 0xff, 0xff}, sizeof(u8[3]));
+    memcpy(config->fntDef, (u8[3]) {0xff, 0xff, 0xff}, sizeof(u8[3]));
+    memcpy(config->fntSel, (u8[3]) {0x00, 0x00, 0x00}, sizeof(u8[3]));
 }
 
 int configCreate() {
@@ -154,7 +216,7 @@ int configAddEntry(char *title, char *path, long offset) {
 int configRemoveEntry(int index) {
 
     // remove element
-    if (!config_setting_remove_elem(setting_entries, index)) {
+    if (!config_setting_remove_elem(setting_entries, (unsigned int) index)) {
         return -1;
     }
 
@@ -224,7 +286,61 @@ void configWrite() {
 
 void configExit() {
     if (config) {
+        if (config->bgImgTopBuff) {
+            free(config->bgImgTopBuff);
+        }
+        if (config->bgImgBotBuff) {
+            free(config->bgImgBotBuff);
+        }
         config_destroy(&cfg);
         free(config);
     }
+}
+
+void loadImages() {
+    config->imgError = false;
+    config->imgErrorBot = false;
+    FILE *file = fopen(config->bgImgTop, "rb");
+    if (file == NULL) {
+        config->imgError = true;
+        goto imgSkipTop;
+    }
+    fseek(file, 0, SEEK_END);
+    config->bgImgTopSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    config->bgImgTopBuff = malloc((size_t) config->bgImgTopSize);
+    if (!config->bgImgTopBuff) {
+        config->imgError = true;
+        goto imgSkipTop;
+    }
+    off_t bgImgTopRead = (off_t) fread(config->bgImgTopBuff, 1, (size_t) config->bgImgTopSize, file);
+    fclose(file);
+    if (config->bgImgTopSize != bgImgTopRead) {
+        config->imgError = true;
+        goto imgSkipTop;
+    }
+
+    //skip loading top image on error
+    imgSkipTop:;
+
+    FILE *fileBot = fopen(config->bgImgBot, "rb");
+    if (fileBot == NULL) {
+        config->imgErrorBot = true;
+        goto imgSkip;
+    }
+    fseek(fileBot, 0, SEEK_END);
+    config->bgImgBotSize = ftell(fileBot);
+    fseek(fileBot, 0, SEEK_SET);
+    config->bgImgBotBuff = malloc((size_t) config->bgImgBotSize);
+    if (!config->bgImgBotBuff) {
+        config->imgErrorBot = true;
+        goto imgSkip;
+    }
+    off_t bgImgBotRead = (off_t) fread(config->bgImgBotBuff, 1, (size_t) config->bgImgBotSize, fileBot);
+    fclose(fileBot);
+    if (config->bgImgBotSize != bgImgBotRead) {
+        config->imgErrorBot = true;
+        goto imgSkip;
+    }
+    imgSkip:;
 }

@@ -12,6 +12,8 @@
 #include <stdio.h>
 
 #include <zlib.h>
+#include <config.h>
+#include <menu.h>
 #include "gfx.h"
 
 #define ZLIB_CHUNK (16 * 1024)
@@ -52,8 +54,9 @@ static int netloader_draw_progress(void) {
     //gfxFlushBuffers();
     //gfxSwapBuffers();
     //gspWaitForVBlank();
-    gfxClear();
-    gfxDrawTextf(GFX_TOP, GFX_LEFT, &fontDefault, 48, 48, "%s: %s", netloadedPath, progress);
+    drawBg();
+    gfxDrawTextf(GFX_TOP, GFX_LEFT, &fontDefault, MENU_MIN_X + 16, MENU_MIN_Y + 16,
+                 "%s: %s", netloadedPath, progress);
     gfxSwap();
 
     return 0;
@@ -180,17 +183,14 @@ int netloader_draw_error(void) {
 int netloader_init(void) {
     SOC_buffer = memalign(0x1000, 0x100000);
     if (SOC_buffer == NULL) {
-        //debug("Err: SOC_buffer");
         return -1;
     }
 
     Result ret = socInit(SOC_buffer, 0x100000);
     if (ret != 0) {
-        // need to free the shared memory block if something goes wrong
         socExit();
         free(SOC_buffer);
         SOC_buffer = NULL;
-        //debug("Err: SOC_Initialize");
         return -1;
     }
     return 0;

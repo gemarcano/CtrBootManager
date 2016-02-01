@@ -22,6 +22,21 @@ typedef struct {
     int recovery;
     int count;
     boot_entry_s entries[12];
+    u8 bgTop1[3];
+    u8 bgTop2[3];
+    u8 bgBot[3];
+    u8 highlight[3];
+    u8 borders[3];
+    u8 fntDef[3];
+    u8 fntSel[3];
+    char bgImgTop[512];
+    char bgImgBot[512];
+    bool imgError;
+    bool imgErrorBot;
+    u8 *bgImgTopBuff;
+    u8 *bgImgBotBuff;
+    off_t bgImgTopSize;
+    off_t bgImgBotSize;
 } boot_config_s;
 
 boot_config_s *config;
@@ -37,6 +52,8 @@ void configUpdateSettings();
 void configWrite();
 
 void configExit();
+
+void loadImages();
 
 #ifdef __cplusplus
 }

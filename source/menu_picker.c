@@ -9,6 +9,7 @@
 #include "picker.h"
 #include "utility.h"
 #include "config.h"
+#include "menu.h"
 
 #define MAX_LINE 11
 
@@ -186,15 +187,8 @@ void pick_file(file_s *picked, const char *path) {
             get_dir(picker->now_path);
         }
 
-        gfxClear();
-        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, "*** Select a file ***", 150, 20);
-
-        int minX = 16;
-        int maxX = 400 - 16;
-        int minY = 32;
-        int maxY = 240 - 16;
-        drawRect(GFX_TOP, GFX_LEFT, minX, minY, maxX, maxY, (u8) 0xFF, (u8) 0xFF, (u8) 0xFF);
-        minY += 20;
+        drawBg();
+        drawTitle("*** Select a file ***");
 
         int i, y = 0;
         int page = picker->file_index / MAX_LINE;
@@ -202,16 +196,9 @@ void pick_file(file_s *picked, const char *path) {
             if (i >= picker->file_count)
                 break;
 
-            if (i == picker->file_index) {
-                gfxDrawRectangle(GFX_TOP, GFX_LEFT, (u8[]) {0xDC, 0xDC, 0xDC}, minX + 4, minY + 16 * y, maxX - 23, 15);
-                gfxDrawTextN(GFX_TOP, GFX_LEFT, &fontSelected, picker->files[i].name, 47, minX + 6, minY + 16 * y);
-                if (!picker->files[i].isDir) {
-                    gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault, "Information", minX + 6, 20);
-                    gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault,
-                                "Press (A) to launch\nPress (X) to add to boot menu", minX + 12, 40);
-                }
-            } else {
-                gfxDrawTextN(GFX_TOP, GFX_LEFT, &fontDefault, picker->files[i].name, 47, minX + 6, minY + 16 * y);
+            drawItemN(i == picker->file_index, 47, 16 * y, picker->files[i].name);
+            if (i == picker->file_index && !picker->files[i].isDir) {
+                drawInfo("Press (A) to launch\nPress (X) to add to boot menu");
             }
             y++;
         }

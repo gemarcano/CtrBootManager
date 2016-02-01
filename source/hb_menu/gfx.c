@@ -39,6 +39,10 @@ void drawRect(gfxScreen_t screen, gfx3dSide_t side, int x1, int y1, int x2, int 
     drawLine(screen, side, x1, y1, x1, y2, r, g, b);
 }
 
+void drawRectColor(gfxScreen_t screen, gfx3dSide_t side, int x1, int y1, int x2, int y2, u8 *color) {
+    drawRect(screen, side, x1, y1, x2, y2, color[0], color[1], color[2]);
+}
+
 void drawFillRect(gfxScreen_t screen, gfx3dSide_t side, int x1, int y1, int x2, int y2, char r, char g, char b) {
     int X1, X2, Y1, Y2, i, j;
     u16 fbWidth, fbHeight;
@@ -391,14 +395,12 @@ void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColorStart[3], u8 r
     }
 }
 
-void gfxClearColor(u8 rgbColor[3]) {
-    gfxFillColor(GFX_TOP, GFX_LEFT, rgbColor);
-    gfxFillColor(GFX_BOTTOM, GFX_LEFT, rgbColor);
+void gfxClearTop(u8 top1[3], u8 top2[3]) {
+    gfxFillColorGradient(GFX_TOP, GFX_LEFT, top1, top2);
 }
 
-void gfxClear() {
-    gfxFillColorGradient(GFX_TOP, GFX_LEFT, (u8[]) {0x4a, 0x00, 0x31}, (u8[]) {0x6f, 0x01, 0x49});
-    gfxFillColor(GFX_BOTTOM, GFX_LEFT, (u8[]) {0x6f, 0x01, 0x49});
+void gfxClearBot(u8 bot[8]) {
+    gfxFillColor(GFX_BOTTOM, GFX_LEFT, bot);
 }
 
 void gfxSwap() {

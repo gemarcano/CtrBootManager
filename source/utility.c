@@ -6,6 +6,8 @@
 #include <CakeBrah/source/libkhax/khax.h>
 
 #include "gfx.h"
+#include "config.h"
+#include "menu.h"
 
 FS_Archive sdmcArchive;
 
@@ -90,9 +92,9 @@ void debug(const char *fmt, ...) {
         if (hidKeysDown())
             break;
 
-        gfxClear();
-        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, s, 8, 32);
-        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, "Press any key to continue. . .", 8, 64);
+        drawBg();
+        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, s, MENU_MIN_X + 16, MENU_MIN_Y + 16);
+        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, "Press any key to continue...", MENU_MIN_X + 16, MENU_MIN_Y + 64);
         gfxSwap();
     }
 }
@@ -114,10 +116,10 @@ bool confirm(int confirmButton, const char *fmt, ...) {
             return false;
         }
 
-        gfxClear();
-        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, s, 8, 32);
-        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, "Press any key to cancel. . .", 8, 64);
-        gfxDrawTextf(GFX_TOP, GFX_LEFT, &fontDefault, 8, 80, "Press (%s) to confirm. . .", get_button(confirmButton));
+        drawBg();
+        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, s, MENU_MIN_X + 16, MENU_MIN_Y + 16);
+        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, "Press any key to cancel...", MENU_MIN_X + 16, MENU_MIN_Y + 64);
+        gfxDrawTextf(GFX_TOP, GFX_LEFT, &fontDefault, MENU_MIN_X + 16, MENU_MIN_Y + 84, "Press (%s) to confirm...", get_button(confirmButton));
         gfxSwap();
     }
 }

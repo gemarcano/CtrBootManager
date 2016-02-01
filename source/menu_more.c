@@ -25,6 +25,7 @@ int menu_choose() {
 
 int menu_more() {
 
+    int i = 0;
     menu_index = 0;
 
     while (aptMainLoop()) {
@@ -62,57 +63,30 @@ int menu_more() {
             return -1;
         }
 
-        gfxClear();
-        gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, "*** Select an option ***", 140, 20);
+        drawBg();
+        drawTitle("*** Select an option ***");
 
-        int minX = 16;
-        int maxX = 400 - 16;
-        int minY = 32;
-        int maxY = 240 - 16;
-        drawRect(GFX_TOP, GFX_LEFT, minX, minY, maxX, maxY, 0xFF, 0xFF, 0xFF);
-        minY += 20;
-
-        int i;
         for (i = 0; i < menu_count; i++) {
-            if (i >= menu_count) break;
-
-            if (i == menu_index) {
-                gfxDrawRectangle(GFX_TOP, GFX_LEFT, (u8[]) {0xDC, 0xDC, 0xDC}, minX + 4, minY + (16 * i), maxX - 23,
-                                 15);
-                gfxDrawText(GFX_TOP, GFX_LEFT, &fontSelected, menu_item[i], minX + 6, minY + (16 * i));
-            }
-            else
-                gfxDrawText(GFX_TOP, GFX_LEFT, &fontDefault, menu_item[i], minX + 6, minY + (16 * i));
+            drawItem(i == menu_index, 16 * i, menu_item[i]);
         }
 
         // draw "help"
-        gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault, "Information", minX + 6, 20);
         switch (menu_index) {
             case 0:
-                gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault,
-                            "Browse for a file to boot or add a boot entry", minX + 12, 40);
+                drawInfo("Browse for a file to boot or add a boot entry");
                 break;
-
             case 1:
-                gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault,
-                            "Netload a file (3dsx) from the computer with 3dslink", minX + 12, 40);
+                drawInfo("Netload a file (3dsx) from the computer with 3dslink");
                 break;
-
             case 2:
-                gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault,
-                            "Edit boot settings", minX + 12, 40);
+                drawInfo("Edit boot settings");
                 break;
-
             case 3:
-                gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault,
-                            "Reboot the 3ds . . .", minX + 12, 40);
+                drawInfo("Reboot the 3ds...");
                 break;
-
             case 4:
-                gfxDrawText(GFX_BOTTOM, GFX_LEFT, &fontDefault,
-                            "Shutdown the 3ds . . .", minX + 12, 40);
+                drawInfo("Shutdown the 3ds...");
                 break;
-
             default:
                 break;
         }
